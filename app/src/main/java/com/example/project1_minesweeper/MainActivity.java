@@ -3,9 +3,11 @@ package com.example.project1_minesweeper;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.gridlayout.widget.GridLayout;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -22,6 +24,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean[][] revealed; // to check if a cell is revealed or not
     private boolean flaggingMode = false; // false = digging, true = flagging
     private int flagsPlaced = 0;
+    private int clock = 0;
+    private boolean running = false;
+    private boolean gameStarted = false;
 
     // save the TextViews of all cells in an array, so later on,
     // when a TextView is clicked, we know which cell it is
@@ -72,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
             flaggingMode = !flaggingMode;
             modeTV.setText(flaggingMode ? "🚩" : "⛏");
         });
+
+        runTimer();
     }
 
     private int findIndexOfCellTextView(TextView tv) {
@@ -153,11 +160,44 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private boolean isGameOver() {
+        for (int i = 0; i < ROW_COUNT; i++) {
+            for (int j = 0; j < COLUMN_COUNT; j++) {
+                if (gridData[i][j] != -1 && !revealed[i][j]) {
+                    return false;  // Game is not over yet since there are still unrevealed cells that aren't mines
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean hasPlayerWon() {
+        for (int i = 0; i < ROW_COUNT; i++) {
+            for (int j = 0; j < COLUMN_COUNT; j++) {
+                if (gridData[i][j] != -1 && !revealed[i][j]) {
+                    return false; // Player hasn't revealed all non-mine cells
+                }
+            }
+        }
+        return true;
+    }
+
+    private void showResultPage() {
+        Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+        // intent.putExtra("timeElapsed", timeElapsed);
+        intent.putExtra("hasWon", hasPlayerWon());
+        startActivity(intent);
+    }
+
     public void onClickTV(View view) {
         TextView tv = (TextView) view;
         int n = findIndexOfCellTextView(tv);
         int i = n / COLUMN_COUNT;
         int j = n % COLUMN_COUNT;
+
+        if (!gameStarted) {
+            startTimer();
+        }
 
         if(flaggingMode) {
             // Handle flag placement
@@ -170,17 +210,57 @@ public class MainActivity extends AppCompatActivity {
                     flagsPlaced++;
                 }
             }
-        } else {
+        }
+        else {
             // Handle digging
             if(gridData[i][j] == -1) {
-                // Mine! Game over.
+                // Mine. Game over.
+                stopTimer();
                 revealAllCells();
-                // TODO: Show game over message and navigate to result page
+                showResultPage();
             } else {
                 revealCell(i, j);
-                // TODO: Check game win condition
             }
         }
+
+        if (isGameOver() || hasPlayerWon()) {
+            // Navigate to the result page
+            stopTimer();
+            showResultPage();
+        }
+
+    }
+
+
+
+    private void runTimer() {
+        final TextView timeView = (TextView) findViewById(R.id.secondCount);
+        final Handler handler = new Handler();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                String time = String.format("\uD83D\uDD53 %03d", clock);
+                timeView.setText(time);
+
+                if (running) {
+                    clock++;
+                }
+                handler.postDelayed(this, 1000);
+            }
+        });
+    }
+
+    private void startTimer() {
+        if (!gameStarted) {
+            gameStarted = true;
+            running = true;
+        }
+    }
+
+    private void stopTimer() {
+        gameStarted = false;
+        running = false;
     }
 
 
