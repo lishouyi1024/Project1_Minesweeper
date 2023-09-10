@@ -11,11 +11,17 @@ import android.view.View;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int COLUMN_COUNT = 10;
     private static final int ROW_COUNT = 12;
+    private static final int MINE_COUNT = 4;
+    private int[][] gridData; // -1 for mine, 0-8 for number of adjacent mines
+    private boolean[][] revealed; // to check if a cell is revealed or not
+    private boolean flaggingMode = false; // false = digging, true = flagging
+    private int flagsPlaced = 0;
 
     // save the TextViews of all cells in an array, so later on,
     // when a TextView is clicked, we know which cell it is
@@ -43,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
                 tv.setTextSize(14);
                 tv.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
                 tv.setTextColor(Color.GRAY);
-                tv.setBackgroundColor(Color.GRAY);
+                tv.setBackgroundColor(Color.GREEN);
                 tv.setOnClickListener(this::onClickTV);
 
                 androidx.gridlayout.widget.GridLayout.LayoutParams lp = new androidx.gridlayout.widget.GridLayout.LayoutParams();
@@ -55,6 +61,17 @@ public class MainActivity extends AppCompatActivity {
                 cell_tvs.add(tv);
             }
         }
+
+        gridData = new int[ROW_COUNT][COLUMN_COUNT];
+        revealed = new boolean[ROW_COUNT][COLUMN_COUNT];
+        placeRandomMines();
+        computeAdjacentMines();
+
+        TextView modeTV = findViewById(R.id.diggingOrFlagging);
+        modeTV.setOnClickListener(v -> {
+            flaggingMode = !flaggingMode;
+            modeTV.setText(flaggingMode ? "🚩" : "⛏");
+        });
     }
 
     private int findIndexOfCellTextView(TextView tv) {
@@ -65,18 +82,107 @@ public class MainActivity extends AppCompatActivity {
         return -1;
     }
 
-    public void onClickTV(View view){
-        TextView tv = (TextView) view;
-        int n = findIndexOfCellTextView(tv);
-        int i = n/COLUMN_COUNT;
-        int j = n%COLUMN_COUNT;
-        tv.setText(String.valueOf(i)+String.valueOf(j));
-        if (tv.getCurrentTextColor() == Color.GRAY) {
-            tv.setTextColor(Color.GREEN);
-            tv.setBackgroundColor(Color.parseColor("lime"));
-        }else {
-            tv.setTextColor(Color.GRAY);
+    private void placeRandomMines() {
+        Random rand = new Random();
+        int minesPlaced = 0;
+
+        while(minesPlaced < MINE_COUNT) {
+            int i = rand.nextInt(ROW_COUNT);
+            int j = rand.nextInt(COLUMN_COUNT);
+
+            if(gridData[i][j] != -1) {
+                gridData[i][j] = -1;
+                minesPlaced++;
+            }
+        }
+    }
+
+    private void computeAdjacentMines() {
+        for (int i = 0; i < ROW_COUNT; i++) {
+            for (int j = 0; j < COLUMN_COUNT; j++) {
+                if (gridData[i][j] != -1) {
+                    int count = 0;
+                    for (int x = -1; x <= 1; x++) {
+                        for (int y = -1; y <= 1; y++) {
+                            if (i + x >= 0 && i + x < ROW_COUNT && j + y >= 0 && j + y < COLUMN_COUNT && gridData[i + x][j + y] == -1) {
+                                count++;
+                            }
+                        }
+                    }
+                    gridData[i][j] = count;
+                }
+            }
+        }
+    }
+
+    private void revealCell(int i, int j) {
+        if (i < 0 || i >= ROW_COUNT || j < 0 || j >= COLUMN_COUNT || revealed[i][j]) return;
+
+        TextView tv = cell_tvs.get(i * COLUMN_COUNT + j);
+
+        revealed[i][j] = true;
+
+        if (gridData[i][j] == 0) {
+            tv.setText("");
+            tv.setBackgroundColor(Color.LTGRAY);
+
+            // Recursively reveal neighbors
+            for (int x = -1; x <= 1; x++) {
+                for (int y = -1; y <= 1; y++) {
+                    revealCell(i + x, j + y);
+                }
+            }
+        } else {
+            tv.setText(String.valueOf(gridData[i][j]));
             tv.setBackgroundColor(Color.LTGRAY);
         }
     }
+
+    private void revealAllCells() {
+        for(int i = 0; i < ROW_COUNT; i++) {
+            for(int j = 0; j < COLUMN_COUNT; j++) {
+                TextView tv = cell_tvs.get(i * COLUMN_COUNT + j);
+                if(gridData[i][j] == -1) {
+                    tv.setText("💣");
+                    tv.setBackgroundColor(Color.RED);
+                } else {
+                    tv.setText(String.valueOf(gridData[i][j]));
+                    tv.setBackgroundColor(Color.LTGRAY);
+                }
+            }
+        }
+    }
+
+    public void onClickTV(View view) {
+        TextView tv = (TextView) view;
+        int n = findIndexOfCellTextView(tv);
+        int i = n / COLUMN_COUNT;
+        int j = n % COLUMN_COUNT;
+
+        if(flaggingMode) {
+            // Handle flag placement
+            if(!revealed[i][j]) {
+                if(tv.getText().equals("🚩")) {
+                    tv.setText(""); // remove flag
+                    flagsPlaced--;
+                } else {
+                    tv.setText("🚩"); // place flag
+                    flagsPlaced++;
+                }
+            }
+        } else {
+            // Handle digging
+            if(gridData[i][j] == -1) {
+                // Mine! Game over.
+                revealAllCells();
+                // TODO: Show game over message and navigate to result page
+            } else {
+                revealCell(i, j);
+                // TODO: Check game win condition
+            }
+        }
+    }
+
+
+
 }
