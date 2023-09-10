@@ -25,8 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean flaggingMode = false; // false = digging, true = flagging
     private int flagsPlaced = 0;
     private int clock = 0;
-    private boolean running = false;
-    private boolean gameStarted = false;
+    private boolean running = false; // flag to start or stop the timer
     private boolean gameOver = false;
 
     // save the TextViews of all cells in an array, so later on,
@@ -158,6 +157,9 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     tv.setText(String.valueOf(gridData[i][j]));
                     tv.setBackgroundColor(Color.LTGRAY);
+                    if (gridData[i][j] == 0) {
+                        tv.setText("");
+                    }
                 }
             }
         }
@@ -204,8 +206,8 @@ public class MainActivity extends AppCompatActivity {
         int i = n / COLUMN_COUNT;
         int j = n % COLUMN_COUNT;
 
-        if (!gameStarted) {
-            startTimer();
+        if (!running) {
+            running = true; // start timer
         }
 
         if (gameOver) {
@@ -233,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
             if(gridData[i][j] == -1) {
                 // Mine. Game over.
                 gameOver = true;
-                stopTimer();
+                running = false; // stop timer
                 revealAllCells();
             }
             else {
@@ -244,11 +246,10 @@ public class MainActivity extends AppCompatActivity {
         if (isGameOver() || hasPlayerWon()) {
             // Navigate to the result page
             gameOver = true;
-            stopTimer();
+            running = false; // stop timer
         }
 
     }
-
 
 
     private void runTimer() {
@@ -267,18 +268,6 @@ public class MainActivity extends AppCompatActivity {
                 handler.postDelayed(this, 1000);
             }
         });
-    }
-
-    private void startTimer() {
-        if (!gameStarted) {
-            gameStarted = true;
-            running = true;
-        }
-    }
-
-    private void stopTimer() {
-        gameStarted = false;
-        running = false;
     }
 
 
