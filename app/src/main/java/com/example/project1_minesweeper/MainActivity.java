@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private int clock = 0;
     private boolean running = false;
     private boolean gameStarted = false;
+    private boolean gameOver = false;
 
     // save the TextViews of all cells in an array, so later on,
     // when a TextView is clicked, we know which cell it is
@@ -192,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showResultPage() {
         Intent intent = new Intent(MainActivity.this, ResultActivity.class);
-        // intent.putExtra("timeElapsed", timeElapsed);
+        intent.putExtra("timeElapsed", clock);
         intent.putExtra("hasWon", hasPlayerWon());
         startActivity(intent);
     }
@@ -205,6 +206,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (!gameStarted) {
             startTimer();
+        }
+
+        if (gameOver) {
+            showResultPage();
+            return;
         }
 
         if(flaggingMode) {
@@ -226,9 +232,9 @@ public class MainActivity extends AppCompatActivity {
             // Handle digging
             if(gridData[i][j] == -1) {
                 // Mine. Game over.
+                gameOver = true;
                 stopTimer();
                 revealAllCells();
-                showResultPage();
             }
             else {
                 revealCell(i, j);
@@ -237,8 +243,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (isGameOver() || hasPlayerWon()) {
             // Navigate to the result page
+            gameOver = true;
             stopTimer();
-            showResultPage();
         }
 
     }

@@ -19,10 +19,10 @@ public class ResultActivity extends AppCompatActivity {
         Button restartGame = findViewById(R.id.restart_game);
 
         boolean hasWon = getIntent().getBooleanExtra("hasWon", false);
-        long timeElapsed = getIntent().getLongExtra("timeElapsed", 0);
+        int timeElapsed = getIntent().getIntExtra("timeElapsed", 0);
 
         resultMessage.setText(hasWon ? "You Won!" : "You Lost!");
-        timeTaken.setText("Time taken: " + timeElapsed / 1000 + " seconds");
+        timeTaken.setText("Time taken: " + timeElapsed + " seconds");
 
         restartGame.setOnClickListener(v -> {
             Intent intent = new Intent(ResultActivity.this, MainActivity.class);
