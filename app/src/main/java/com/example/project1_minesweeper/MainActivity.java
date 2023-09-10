@@ -139,7 +139,8 @@ public class MainActivity extends AppCompatActivity {
                     revealCell(i + x, j + y);
                 }
             }
-        } else {
+        }
+        else {
             tv.setText(String.valueOf(gridData[i][j]));
             tv.setBackgroundColor(Color.LTGRAY);
         }
@@ -152,7 +153,8 @@ public class MainActivity extends AppCompatActivity {
                 if(gridData[i][j] == -1) {
                     tv.setText("💣");
                     tv.setBackgroundColor(Color.RED);
-                } else {
+                }
+                else {
                     tv.setText(String.valueOf(gridData[i][j]));
                     tv.setBackgroundColor(Color.LTGRAY);
                 }
@@ -182,6 +184,12 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    private void updateFlagCount() {
+        TextView tv = (TextView) findViewById(R.id.flagCount);
+        String flg = String.format("🚩 %01d", MINE_COUNT - flagsPlaced);
+        tv.setText(flg);
+    }
+
     private void showResultPage() {
         Intent intent = new Intent(MainActivity.this, ResultActivity.class);
         // intent.putExtra("timeElapsed", timeElapsed);
@@ -205,9 +213,12 @@ public class MainActivity extends AppCompatActivity {
                 if(tv.getText().equals("🚩")) {
                     tv.setText(""); // remove flag
                     flagsPlaced--;
-                } else {
+                    updateFlagCount();
+                }
+                else {
                     tv.setText("🚩"); // place flag
                     flagsPlaced++;
+                    updateFlagCount();
                 }
             }
         }
@@ -218,7 +229,8 @@ public class MainActivity extends AppCompatActivity {
                 stopTimer();
                 revealAllCells();
                 showResultPage();
-            } else {
+            }
+            else {
                 revealCell(i, j);
             }
         }
