@@ -22,7 +22,7 @@ public class ResultActivity extends AppCompatActivity {
         int timeElapsed = getIntent().getIntExtra("timeElapsed", 0);
 
         resultMessage.setText(hasWon ? "You Won!" : "You Lost!");
-        timeTaken.setText("Time taken: " + timeElapsed + " seconds");
+        timeTaken.setText("Used " + timeElapsed + " Seconds");
 
         restartGame.setOnClickListener(v -> {
             Intent intent = new Intent(ResultActivity.this, MainActivity.class);

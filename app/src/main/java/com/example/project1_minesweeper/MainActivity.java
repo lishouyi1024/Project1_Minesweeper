@@ -1,14 +1,12 @@
 package com.example.project1_minesweeper;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.gridlayout.widget.GridLayout;
 
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
@@ -166,12 +164,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void revealBombs() {
+        int color;
+        if (hasPlayerWon()) {
+            color = Color.GREEN;
+        }
+        else {
+            color = Color.RED;
+        }
         for(int i = 0; i < ROW_COUNT; i++) {
             for (int j = 0; j < COLUMN_COUNT; j++) {
                 TextView tv = cell_tvs.get(i * COLUMN_COUNT + j);
                 if(gridData[i][j] == -1) {
                     tv.setText("💣");
-                    tv.setBackgroundColor(Color.GREEN);
+                    tv.setBackgroundColor(color);
                 }
             }
         }
@@ -237,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
                 // Mine. Game over.
                 gameOver = true;
                 running = false; // stop timer
-                revealAllCells();
+                revealBombs();
             }
             else {
                 revealCell(i, j);
