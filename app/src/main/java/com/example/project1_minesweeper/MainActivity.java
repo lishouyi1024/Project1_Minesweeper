@@ -165,15 +165,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private boolean isGameOver() {
-        for (int i = 0; i < ROW_COUNT; i++) {
+    private void revealBombs() {
+        for(int i = 0; i < ROW_COUNT; i++) {
             for (int j = 0; j < COLUMN_COUNT; j++) {
-                if (gridData[i][j] != -1 && !revealed[i][j]) {
-                    return false;  // Game is not over yet since there are still unrevealed cells that aren't mines
+                TextView tv = cell_tvs.get(i * COLUMN_COUNT + j);
+                if(gridData[i][j] == -1) {
+                    tv.setText("💣");
+                    tv.setBackgroundColor(Color.GREEN);
                 }
             }
         }
-        return true;
     }
 
     private boolean hasPlayerWon() {
@@ -243,10 +244,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if (isGameOver() || hasPlayerWon()) {
-            // Navigate to the result page
+        if (hasPlayerWon()) {
             gameOver = true;
             running = false; // stop timer
+            revealBombs();
         }
 
     }
