@@ -126,6 +126,10 @@ public class MainActivity extends AppCompatActivity {
         TextView tv = cell_tvs.get(i * COLUMN_COUNT + j);
 
         revealed[i][j] = true;
+        if(tv.getText().equals("🚩")) {
+            flagsPlaced--;
+            updateFlagCount();
+        }
 
         if (gridData[i][j] == 0) {
             tv.setText("");
@@ -144,24 +148,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void revealAllCells() {
-        for(int i = 0; i < ROW_COUNT; i++) {
-            for(int j = 0; j < COLUMN_COUNT; j++) {
-                TextView tv = cell_tvs.get(i * COLUMN_COUNT + j);
-                if(gridData[i][j] == -1) {
-                    tv.setText("💣");
-                    tv.setBackgroundColor(Color.RED);
-                }
-                else {
-                    tv.setText(String.valueOf(gridData[i][j]));
-                    tv.setBackgroundColor(Color.LTGRAY);
-                    if (gridData[i][j] == 0) {
-                        tv.setText("");
-                    }
-                }
-            }
-        }
-    }
 
     private void revealBombs() {
         int color;
@@ -227,17 +213,17 @@ public class MainActivity extends AppCompatActivity {
                 if(tv.getText().equals("🚩")) {
                     tv.setText(""); // remove flag
                     flagsPlaced--;
-                    updateFlagCount();
                 }
                 else {
                     tv.setText("🚩"); // place flag
                     flagsPlaced++;
-                    updateFlagCount();
                 }
+                updateFlagCount();
             }
         }
         else {
             // Handle digging
+            if(tv.getText().equals("🚩")) return;
             if(gridData[i][j] == -1) {
                 // Mine. Game over.
                 gameOver = true;
